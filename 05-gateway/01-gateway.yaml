@@ -1,0 +1,39 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: main-gateway
+  namespace: web
+spec:
+  gatewayClassName: eg
+  listeners:
+    # Port 80 - all hostnames (routes decide where traffic goes)
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces: { from: Same }
+
+    # Port 443 - one listener per hostname, each with its own self-signed cert
+    - name: https-nginx
+      protocol: HTTPS
+      port: 443
+      hostname: nginx.example.local
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: tls-nginx
+      allowedRoutes:
+        namespaces: { from: Same }
+
+    - name: https-apache
+      protocol: HTTPS
+      port: 443
+      hostname: apache.example.local
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: tls-apache
+      allowedRoutes:
+        namespaces: { from: Same }
